@@ -1,4 +1,4 @@
-# Copyright 2025 The American University in Cairo
+# Copyright 2025 Mohamed Gaber
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
+import os
 import json
 import argparse
 
 from pathlib import Path
 
+from ciel import Family
 from ciel.source import GitHubReleasesDataSource
 from ciel.common import mkdirp, date_to_iso8601
 
@@ -32,7 +33,9 @@ args = parser.parse_args()
 
 download_path = Path(args.output_dir)
 data_source = GitHubReleasesDataSource(args.target_repo)
-for pdk in ["sky130", "gf180mcu", "ihp-sg13g2"]:
+for pdk in ["ihp-sg13", "sky130", "gf180mcu"]:
+    family = Family.by_name[pdk]
+
     versions = data_source.get_available_versions(pdk)
     base = download_path / pdk
     mkdirp(base)
@@ -57,3 +60,11 @@ for pdk in ["sky130", "gf180mcu", "ihp-sg13g2"]:
             version_manifest["assets"].append(asset.__dict__)
         with open(version_base / "manifest.json", "w") as f:
             json.dump(version_manifest, f)
+
+    for variant in family.variants:
+        target = download_path / variant
+
+        # Need this check because theoretically PDK and family names could be
+        # the same
+        if not target.exists():
+            os.symlink(family.name, target)

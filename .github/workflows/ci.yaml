@@ -14,8 +14,9 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v4
       - name: Install Dependencies
+        # TEMP: remove when ciel 3.0.0 is merged
         run: |
-          python3 -m pip install "ciel>=2.0.4"
+          python3 -m pip install "git+https://github.com/fossi-foundation/ciel@donn/ihp-sg13cmos5l"
       - name: Cache API
         run: |
           export GITHUB_TOKEN=${{ secrets.BOT_TOKEN }}
